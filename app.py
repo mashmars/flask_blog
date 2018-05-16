@@ -1,7 +1,5 @@
-from flask import Flask
-from flask_sqlalchemy import SQLAlchemy
-import pymysql
-pymysql.install_as_MySQLdb()
+from flask import Flask,render_template
+
 import config
 import datetime
 from models import *
@@ -9,19 +7,22 @@ from models import *
 app = Flask(__name__)
 #加载配置
 app.config.from_object(config)
-
-db = SQLAlchemy()
 db.init_app(app)
+
+#加载蓝图
+from controller.admin import admin_bp
+app.register_blueprint(admin_bp)
 
 @app.route('/')
 def home():
     return '首页'
+
 #添加数据
 @app.route('/add')
 def add():
     article = Article()
-    article.title = '文章标题4'
-    article.content = '哈哈，blog正在进行中4...'
+    article.title = '文章标题5'
+    article.content = '哈哈，blog正在进行中5...'
     article.createdate = datetime.datetime.now()
     cate = Category.query.get(1)
     # tag = Tag.query.filter(Tag.id > 1).all()

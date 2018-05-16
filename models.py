@@ -1,5 +1,7 @@
-from app import db
-
+from flask_sqlalchemy import SQLAlchemy
+import pymysql
+pymysql.install_as_MySQLdb()
+db = SQLAlchemy()
 #用户表
 class User(db.Model):
     __tablename__ = 'user'
@@ -37,8 +39,8 @@ class Article(db.Model):
     __tablename__ = 'article'
     id = db.Column(db.Integer,primary_key=True)
     title = db.Column(db.String(255))
+    descript = db.Column(db.String(255),nullable=True,default='')
     category_id = db.Column(db.Integer,db.ForeignKey('category.id'))
-    tag_id = db.Column(db.Integer,db.ForeignKey('tag.id'))
     createdate = db.Column(db.DateTime)
     content = db.Column(db.Text)
     # 1对多关联
