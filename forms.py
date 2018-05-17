@@ -18,7 +18,7 @@ class TagForm(FlaskForm):
 class ArticleForm(FlaskForm):
     title = StringField('标题',validators=[data_required(message='标题不能为空')])
     descript = TextAreaField('描述')
-    category = SelectField('分类',validators=[data_required(message='请选择分类')],choices=[],coerce=int,default=1)
+    category = SelectField('分类',validators=[data_required(message='请选择分类')],choices=[],coerce=int)
     #tag = MultiCheckboxField('标签',validators=[data_required(message='请选择分类')],choices=[],coerce=int)
     content = TextAreaField('内容')
     submit = SubmitField('保存')
@@ -26,6 +26,8 @@ class ArticleForm(FlaskForm):
         super().__init__()
         category_data = Category.query.all()
         self.category.choices = [(cate.id,cate.title) for cate in category_data]
+        #self.category.default= 2
+
         #tag_data = Tag.query.all()
         #self.tag.choices = [(item.id,item.title) for item in Tag.query.all()] #模板调用{{ form.tag() }} ，样式输出格式问题
 

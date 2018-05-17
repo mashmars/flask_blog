@@ -1,4 +1,4 @@
-from flask import Blueprint,render_template,request,url_for,redirect,flash
+from flask import Blueprint,render_template,request,url_for,redirect,flash,jsonify
 from forms import TagForm,ArticleForm
 from models import db,Tag,Category,Article
 
@@ -80,7 +80,8 @@ def category_del(id):
 #文章列表
 @admin_bp.route('/article/')
 def article():
-    d = Article.query.order_by(Article.id.desc()).paginate(1,2)
+    page = request.args.get('page',1)
+    d = Article.query.order_by(Article.id.desc()).paginate(int(page),5)
     #print(d.items)
     return render_template('admin/article.html',article=d)
 #文章添加页面
@@ -107,22 +108,39 @@ def article_add():
 @admin_bp.route('/article/<int:id>/edit/',methods=['GET','POST'])
 def article_edit(id):
     article = Article.query.get_or_404(id)
-    form = ArticleForm()
-    form.title.default =article.title
-    form.category.default =article.category_id
-    form.descript.default = article.descript
-    form.content.default = article.content
-    form.process() #更改默认 必须执行这个 但是csrf提示The CSRF token is missing
-
-
-    if form.is_submitted() and form.validate_on_submit():
-        article.title = form.title.data
-        article.category_id = form.category.data
-        article.descript = form.descript.data
-        article.content = form.content.data
+    #form = ArticleForm()
+    #form.title.default =article.title
+    #form.category.default =article.category_id
+    #form.descript.default = article.descript
+    #form.content.default = article.content
+   # form.process() #更改默认 必须执行这个 但是csrf提示The CSRF token is missing
+    #if form.is_submitted() and form.validate_on_submit():
+        #article.title = form.title.data
+        #article.category_id = form.category.data
+        #article.descript = form.descript.data
+        #article.content = form.content.data
+        #article.tags = Tag.query.filter(Tag.id.in_(request.form.getlist('tag_zidingyi'))).all()
+        #db.session.commit()
+        #return redirect(url_for('admin.article'))
+    if request.method == 'POST':
+        article.category_id = request.form.get('category')
+        article.title = request.form.get('title')
+        article.descript = request.form.get('descript')
+        article.content = request.form.get('content')
         article.tags = Tag.query.filter(Tag.id.in_(request.form.getlist('tag_zidingyi'))).all()
         db.session.commit()
         return redirect(url_for('admin.article'))
-    print(form.errors)
+
     tags = Tag.query.all()
-    return render_template('admin/article_edit.html',form=form,article=article,tags=tags)
+    categorys = Category.query.all()
+    return render_template('admin/article_edit.html',article=article,tags=tags,categorys=categorys)
+#文章删除 ajax
+@admin_bp.route('/article/delete/',methods=['POST'])
+def article_del():
+    id = request.values.get('id')
+    article = Article.query.get(id)
+    if not article:
+        return jsonify({'code':404,'msg':'请求有误'})
+    db.session.delete(article)
+    db.session.commit()
+    return jsonify({'code':0,'msg':'删除成功'})
