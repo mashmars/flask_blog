@@ -87,13 +87,15 @@
 
 {% endblock %}
 {% block js %}
-<script type="text/javascript" src="{{ url_for('static',filename='admin/assets/lib/ckeditor/ckeditor.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static',filename='lib/ckeditor/ckeditor.js') }}"></script>
 <script>
 	$(function(){
 	    CKEDITOR.replace('content',{
-			filebrowserImageUploadUrl : '/upload/',
+			filebrowserImageUploadUrl : '/admin/upload/',
 			language : 'zh-cn',
 		});
+
 	})
 </script>
+
 {% endblock %}

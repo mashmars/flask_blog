@@ -1,8 +1,11 @@
-from flask import Blueprint,render_template,request,url_for,redirect,flash,jsonify
+from flask import Blueprint,render_template,request,url_for,redirect,flash,jsonify,Response,make_response
 from forms import TagForm,ArticleForm
 from models import db,Tag,Category,Article
-
+from config import  UPLOAD_FOLDER,ALLOWED_EXTENSIONS
+import os
+from werkzeug.utils import secure_filename
 import datetime
+
 admin_bp = Blueprint('admin',__name__,url_prefix='/admin')
 
 #后台主页
@@ -69,6 +72,7 @@ def category_edit(id):
         category.title = form.title.data
         db.session.commit()
         return redirect(url_for('admin.category'))
+    form.title.data = category.title #编辑赋值 就不用value=category.title
     return render_template('admin/category_edit.html',category=category,form=form)
 #分类删除
 @admin_bp.route('/category/<int:id>/delete')
@@ -144,3 +148,27 @@ def article_del():
     db.session.delete(article)
     db.session.commit()
     return jsonify({'code':0,'msg':'删除成功'})
+#上传
+#验证是否允许后缀
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.',1)[1].lower() in ALLOWED_EXTENSIONS
+@admin_bp.route('/upload/',methods=['POST'])
+def upload_file():
+    if request.method == 'POST':
+        if 'upload' not in request.files:
+            flash('没有文件')
+            return redirect(request.url)
+        file = request.files['upload']
+        if file.filename == '':
+            flash('没有文件')
+            return redirect(request.url)
+        if file and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            file.save(os.path.join(UPLOAD_FOLDER,filename))
+            #return filename
+            file_path = url_for('static', filename='%s/%s' % ('upload', filename))
+            res = {"fileName":filename,"uploaded":1,"url":file_path}
+            return jsonify(res)
+            response = make_response(res)
+            response.headers["Content-Type"] = "text/html"
+            return response
